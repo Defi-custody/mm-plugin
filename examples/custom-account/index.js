@@ -1,4 +1,5 @@
 const { errors: rpcErrors } = require('eth-json-rpc-errors')
+const ethers = require('ethers');
 
 const accounts = [];
 updateUi();
@@ -25,16 +26,49 @@ wallet.registerAccountMessageHandler(async (origin, req) => {
     case 'wallet_signTypedData':
     case 'wallet_signTypedData_v3':
     case 'wallet_signTypedData_v4':
+      console.log('origin, req', origin, req)
+
+      let provider = new ethers.providers.Web3Provider(wallet);
+      console.log('wallet', wallet);
+      let walletWithProvider = new ethers.Wallet(wallet.getAppKey(), provider);
+      // console.log('getAddress()', walletWithProvider.getAddress());
+      console.log('works');
+
+      let tx = {
+          to: req.params[0].to,
+          // We must pass in the amount as wei (1 ether = 1e18 wei), so we
+          // use this convenience function to convert ether to wei.
+          value: req.params[0].value
+      };
+
+      // let sendPromise = await walletEthers.sendTransaction(tx);
+      // console.log("TX result", sendPromise);
+
+      // const result = await prompt({ customHtml: `<div style="width: 100%;overflow-wrap: break-word;">
+      //   Funds sent with tx hash: ${tx}. The site from <span style="font-weight: 900;color: #037DD6;"><a href="${origin}">${origin}</a></span> requests you sign this with your offline strategy:\n${JSON.stringify(req)}
+      //   </div>`})
+
       const result = await prompt({ customHtml: `<div style="width: 100%;overflow-wrap: break-word;">
         The site from <span style="font-weight: 900;color: #037DD6;"><a href="${origin}">${origin}</a></span> requests you sign this with your offline strategy:\n${JSON.stringify(req)}
         </div>`})
-      return result
+      return 0
     default:
       throw rpcErrors.methodNotFound(req)
   }
 })
 
 async function addAccount (params) {
+  validate(params);
+  const account = params[0]
+  const approved = await confirm(`Do you want to add offline account ${account} to your wallet?`)
+  if (!approved) {
+    throw rpcErrors.userRejectedRequest()
+  }
+  accounts.push(account);
+  updateUi();
+}
+
+async function deposit (params) {
   validate(params);
   const account = params[0]
   const approved = await confirm(`Do you want to add offline account ${account} to your wallet?`)

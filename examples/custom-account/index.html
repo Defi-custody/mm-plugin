@@ -15,11 +15,15 @@
   <button class="connect">Connect Only</button>
 
   <br>
-  <input class="address" placeholder="Ethereum Address"></input>
+  <input class="address" value="0x1df62f291b2e969fb0849d99d9ce41e2f137006e" placeholder="Ethereum Address"></input>
   <button class="add">Add Offline Account to Wallet</button>
 
   <br>
   <button class="tip">Tip</button>
+
+  <!-- <input class="addressTo" placeholder="Ethereum Address For Deposit"></input>
+  <input class="value" placeholder="Value"></input>
+  <button class="deposit">Deposit</button> -->
 
 </body>
 
@@ -32,11 +36,13 @@ const connectAndInstallButton = document.querySelector('button.connectAndInstall
 const connectButton = document.querySelector('button.connect')
 const addButton = document.querySelector('button.add')
 const tipButton = document.querySelector('button.tip')
+const depositButton = document.querySelector('button.deposit')
 
 connectAndInstallButton.addEventListener('click', connectAndInstall)
 connectButton.addEventListener('click', connect)
 addButton.addEventListener('click', add)
 tipButton.addEventListener('click', tip)
+// depositButton.addEventListener('click', deposit)
 
 async function connectAndInstall () {
   await ethereum.send({
@@ -73,12 +79,26 @@ async function add () {
   }
 }
 
+async function deposit() {
+  const to = document.querySelector('input.addressTo').value
+  const value = document.querySelector('input.value').value
+
+  const result = await ethereum.send({
+    method: pluginOrigin,
+    params: [{
+      method: 'deposit',
+      params: [ input ],
+    }]
+  }) 
+}
+
 async function tip () {
   const response = await ethereum.send({
     method: 'eth_accounts',
   })
   const account = response.result[0]
   console.log(`Account ${account} chosen from ${JSON.stringify(response)}`)
+  const to = document.querySelector('input.address').value
 
   try {
     const response2 = await ethereum.send({
@@ -86,10 +106,10 @@ async function tip () {
       params: [{
         from: account,
         value: '0x10000000000000',
-        to: '0x55e2780588aa5000f464f700d2676fd0a22ee160',
+        to: to,
       }]
     })
-
+    console.log('response2 DAPP', response2);
     if (response2) {
       alert(`Site received tip result: ${response2.result}!`)
     }
