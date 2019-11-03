@@ -14,13 +14,12 @@
       "url": "http://localhost:8089/dist/bundle.js"
     },
     "initialPermissions": {
-      "confirm": {},
-      "prompt": {},
-      "wallet_manageIdentities": {}
+      "confirm": {}
     }
   },
   "dependencies": {
     "eth-json-rpc-errors": "^2.0.0",
-    "ethers": "^4.0.39"
+    "ethereumjs-tx": "^2.1.1",
+    "ethereumjs-wallet": "^0.6.3"
   }
 }

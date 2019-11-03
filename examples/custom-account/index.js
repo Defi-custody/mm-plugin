@@ -1,16 +1,19 @@
 const { errors: rpcErrors } = require('eth-json-rpc-errors')
-const ethers = require('ethers');
+const ethereumjs = require('ethereumjs-wallet')
+const EthereumTx = require('ethereumjs-tx').Transaction
 
 const accounts = [];
 updateUi();
 
 wallet.registerRpcMessageHandler(async (_origin, req) => {
+  console.log('addAccount')
   switch (req.method) {
     case 'addAccount':
       addAccount(req.params);
       break;
 
     default:
+      console.log('addAccount error')
       throw rpcErrors.methodNotFound(req)
   }
 
@@ -28,25 +31,42 @@ wallet.registerAccountMessageHandler(async (origin, req) => {
     case 'wallet_signTypedData_v4':
       console.log('origin, req', origin, req)
 
-      let provider = new ethers.providers.Web3Provider(wallet);
-      console.log('wallet', wallet);
-      let walletWithProvider = new ethers.Wallet(wallet.getAppKey(), provider);
-      // console.log('getAddress()', walletWithProvider.getAddress());
-      console.log('works');
+      let ethjsWallet = await ethereumjs.fromPrivateKey(await wallet.getAppKey());
+      console.log('ethjsWallet', ethjsWallet);
+      console.log('getAddress()', '0x372314Cb378A43486FA9D25e0155AA2892fD3941', await walletWithProvider.getAddress());
 
-      let tx = {
-          to: req.params[0].to,
-          // We must pass in the amount as wei (1 ether = 1e18 wei), so we
-          // use this convenience function to convert ether to wei.
-          value: req.params[0].value
-      };
+      let addr = await ethjsWallet.getAddress()
+      let params = [
+        addr,
+        "latest"
+      ];
 
-      // let sendPromise = await walletEthers.sendTransaction(tx);
-      // console.log("TX result", sendPromise);
+      // let nonce = await wallet.send({
+      //   method: 'eth_getTransactionCount',
+      //   params: params,
+      //   from: addr
+      // })
 
-      // const result = await prompt({ customHtml: `<div style="width: 100%;overflow-wrap: break-word;">
-      //   Funds sent with tx hash: ${tx}. The site from <span style="font-weight: 900;color: #037DD6;"><a href="${origin}">${origin}</a></span> requests you sign this with your offline strategy:\n${JSON.stringify(req)}
-      //   </div>`})
+      console.log('nonce', nonce);
+
+      // Number()
+
+      // let transaction = {
+      //     nonce: await walletWithProvider.getTransactionCount(),
+      //     gasLimit: 221000,
+      //     gasPrice: req.params[0].gasPrice,
+
+      //     to: req.params[0].to,
+      //     // ... or supports ENS names
+      //     // to: "ricmoo.firefly.eth",
+
+      //     value: req.params[0].value,
+      //     data: req.params[0].data,
+      //     chainId: ethers.utils.getNetwork().chainId
+      // }
+
+      // let singedTx = await walletWithProvider.sign(transaction);
+      // console.log('wallet', wallet)
 
       const result = await prompt({ customHtml: `<div style="width: 100%;overflow-wrap: break-word;">
         The site from <span style="font-weight: 900;color: #037DD6;"><a href="${origin}">${origin}</a></span> requests you sign this with your offline strategy:\n${JSON.stringify(req)}
